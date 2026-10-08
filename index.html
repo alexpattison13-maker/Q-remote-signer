@@ -7,7 +7,7 @@
 <button id="setup">Create or load key</button>
 <pre id="public"></pre>
 <textarea id="objective" rows="8" cols="50">{"id":"Q-TEST","objective":"Read-only demo","acceptance":["No changes"],"dependencies":[],"paid_api_allowance_gbp":0}</textarea>
-<button id="sign" disabled>Sign locally</button><pre id="result"></pre>
+<button id="sign" disabled>Sign locally</button> <button id="copy" disabled>Copy signed instruction</button><pre id="result"></pre>
 <script>
 'use strict';
 let pair;
@@ -76,6 +76,13 @@ $('sign').onclick=async()=>{
   const envelope={objective,issued_at:Math.floor(Date.now()/1000),nonce:b64(crypto.getRandomValues(new Uint8Array(24)))};
   envelope.signature=b64(await crypto.subtle.sign('Ed25519',pair.privateKey,new TextEncoder().encode(canon(envelope))));
   $('result').textContent=JSON.stringify(envelope,null,2);
- }catch(e){$('result').textContent='Signing error: '+e.message}
+  $('copy').disabled=false;
+ }catch(e){$('copy').disabled=true;$('result').textContent='Signing error: '+e.message}
+};
+$('copy').onclick=async()=>{
+ try{
+  await navigator.clipboard.writeText($('public').textContent+'\n'+$('result').textContent);
+  $('copy').textContent='Copied public key + signed instruction';
+ }catch(e){$('copy').textContent='Copy failed: '+e.message}
 };
 </script></html>
